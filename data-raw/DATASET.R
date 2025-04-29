@@ -13,12 +13,12 @@ targets <- c("1A2", "2B6", "2D6", "2C8", "2C9", "2C19", "3A4",
              "MATE1", "MATE2-K")
 
 fdi_clinical_ddi_drug_list <- temp %>%
-  rename(drug = "Drug or Other Substance") %>%
-  mutate(type = str_extract(VALUE, "inducer|inhibitor|substrate")) %>%
-  mutate(qualifier = str_extract(VALUE, "moderate|strong|weak|sensitive")) %>%
-  mutate(target = str_extract_all(VALUE, paste(targets, collapse = "|"))) %>%
+  rename(DRUG = "Drug or Other Substance") %>%
+  mutate(TYPE = str_extract(VALUE, "inducer|inhibitor|substrate")) %>%
+  mutate(QUALIFIER = str_extract(VALUE, "moderate|strong|weak|sensitive")) %>%
+  mutate(TARGET = str_extract_all(VALUE, paste(targets, collapse = "|"))) %>%
   as_tibble() %>%
-  unnest(target) %>%
-  select(drug, type, qualifier, target)
+  unnest(TARGET) %>%
+  select(DRUG, TYPE, QUALIFIER, TARGET)
 
 usethis::use_data(fdi_clinical_ddi_drug_list, overwrite = TRUE)

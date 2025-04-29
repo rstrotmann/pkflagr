@@ -1,6 +1,24 @@
+make_ddi_drugs <- function(
+    drug_list = fdi_clinical_ddi_drug_list,
+    type = c("inhibitor", "substrate", "inducer"),
+    target = c("2D6", "1A2", "OAT1", "3A4", "2C9", "P-gp", "2C19","OATP1B1",
+               "OATP1B3", "OAT3", "2B6", "MATE1", "MATE2-K", "2C8", "BCRP")) {
+  return(
+    drug_list %>%
+      filter(TYPE %in% type) %>%
+      filter(TARGET %in% target) %>%
+      mutate(DRUG = toupper(DRUG)) %>%
+      mutate(DRUG = str_remove_all(as.character(lapply(
+        str_split(DRUG, " AND "),
+        function(x) x[1])),
+        "[1-9,]"))
+  )
+}
+
+
 #' Title
 #'
-#' @param cm
+#' @param cm Concomitant medication table as data frame.
 #' @param type
 #' @param target
 #' @param drug_list
@@ -13,53 +31,27 @@
 #' @examples
 cm_find <- function(
   cm,
-  type = "inhibitor",
-  target = c("2D6", "1A2", "OAT1", "3A4", "2C9", "P-gp", "2C19","OATP1B1",
-             "OATP1B3", "OAT3", "2B6", "MATE1", "MATE2-K", "2C8", "BCRP"),
-  drug_list = fdi_clinical_ddi_drug_list
+  drug_list = NULL
   ) {
-  # validate input
+  if(is.null(drug_list)) {
+    drug_list <- make_ddi_drugs()
+  }
 
-  objects <- drug_list %>%
-    filter(type == type) %>%
-    filter(target %in% target) %>%
-    mutate(drug = toupper(drug)) %>%
-    mutate(drug = str_remove_all(as.character(lapply(
-      str_split(objects$drug, " AND "),
-      function(x) x[1])),
-      "[1-9,]"))
-
-  # patterns <- unique(str_remove_all(as.character(unique(lapply(
-  #   str_split(objects$drug, " AND "),
-  #   function(x) x[1]))),
-  #   "[1-9,]"))
-
-  patterns <- unique(objects$drug)
+  drug_list <- drug_list %>%
+    mutate(object_index = row_number())
 
   temp <- data.frame(
     name = cm$CMDECOD,
-    m = purrr::map(patterns, function(x) {str_detect(cm$CMDECOD, x)})
+    m = purrr::map(drug_list$DRUG, function(x) {str_detect(cm$CMDECOD, x)})
   )
-  # colnames(temp) = c("drug", patterns)
-
-  # apply(temp, 1, function(x) {
-  #   which(x[-1] == TRUE)
-  # })
+  colnames(temp) <- NULL
 
   cm %>%
-    mutate(drug_index = apply(
+    mutate(object_index = apply(
       temp, 1, function(x) {
         which(x[-1] == TRUE)}
-      ))
-
-
-  # fcm <- function(cmdecod) {
-  #   i <- str_detect(cmdecod, patterns)
-  #   return(patterns[i])
-  # }
-  #
-  # fcm_v <- Vectorize(fcm)
-  #
-  # temp <- cm %>%
-  #   mutate(d = fcm_v(CMDECOD))
+      )) %>%
+    unnest(object_index) %>%
+    left_join(drug_list, by = "object_index")
 }
+

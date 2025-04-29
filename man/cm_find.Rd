@@ -7,8 +7,20 @@
 cm_find(cm, drug_list = NULL)
 }
 \arguments{
-\item{drug_list}{}
+\item{cm}{Concomitant medication table as data frame.}
+
+\item{drug_list}{A data frame with the drugs to be identified, with the columns
+DRUG, TYPE, QUALIFIER and TARGET.}
+}
+\value{
+The concomitant medication table, filtered by the drugs that are in
+the drug_list, with added columns DRUG (the canonical DDI drug name), TYPE
+(the nature of the DDI object), QUALIFIER (the DDI intensity qualifier),
+and TARGET (the DDI target).
 }
 \description{
 Title
+}
+\seealso{
+\code{\link[=make_ddi_drugs]{make_ddi_drugs()}}
 }

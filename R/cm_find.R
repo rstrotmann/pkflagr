@@ -19,16 +19,16 @@ make_ddi_drugs <- function(
 #' Title
 #'
 #' @param cm Concomitant medication table as data frame.
-#' @param type
-#' @param target
-#' @param drug_list
-#'
-#' @returns
+#' @param drug_list A data frame with the drugs to be identified, with the columns
+#'   DRUG, TYPE, QUALIFIER and TARGET.
+#' @returns The concomitant medication table, filtered by the drugs that are in
+#'   the drug_list, with added columns DRUG (the canonical DDI drug name), TYPE
+#'   (the nature of the DDI object), QUALIFIER (the DDI intensity qualifier),
+#'   and TARGET (the DDI target).
 #' @import purrr
 #' @import stringr
+#' @seealso [make_ddi_drugs()]
 #' @export
-#'
-#' @examples
 cm_find <- function(
   cm,
   drug_list = NULL

@@ -1,3 +1,15 @@
+#' Make list of DDI perpetrators or substrates
+#'
+#' @param drug_list The list of drugs, defaults to a built-in data set provided
+#'   by FDA.
+#' @param type Type of DDI perpetrator or substrate, as character.
+#' @param target Type of DDI target, as character.
+#'
+#' @returns Data frame
+#' @export
+#'
+#' @examples
+#' make_ddi_drugs(type = "inhibitor", target = "2B6")
 make_ddi_drugs <- function(
     drug_list = fdi_clinical_ddi_drug_list,
     type = c("inhibitor", "substrate", "inducer"),

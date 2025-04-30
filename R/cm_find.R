@@ -1,11 +1,20 @@
 #' Make list of DDI perpetrators or substrates
 #'
 #' @param drug_list The list of drugs, defaults to a built-in data set provided
-#'   by FDA.
-#' @param type Type of DDI perpetrator or substrate, as character.
-#' @param target Type of DDI target, as character.
+#'   by FDA. Must contain columns DRUG, TYPE, and TARGET.
+#' @param type Type of DDI perpetrator or substrate, as character vector.
+#'   Valid values are "inhibitor", "substrate", and "inducer".
+#' @param target Type of DDI target, as character vector. Valid values are
+#'   "2D6", "1A2", "OAT1", "3A4", "2C9", "P-gp", "2C19", "OATP1B1",
+#'   "OATP1B3", "OAT3", "2B6", "MATE1", "MATE2-K", "2C8", "BCRP".
 #'
-#' @returns Data frame
+#' @returns A data frame containing the filtered drug list with columns:
+#'   \itemize{
+#'     \item DRUG: The canonical drug name (uppercase, without numbers and commas)
+#'     \item TYPE: The type of DDI (inhibitor, substrate, or inducer)
+#'     \item TARGET: The target of the DDI
+#'     \item QUALIFIER: The intensity qualifier (if present in input)
+#'   }
 #' @export
 #'
 #' @examples
@@ -15,16 +24,48 @@ make_ddi_drugs <- function(
     type = c("inhibitor", "substrate", "inducer"),
     target = c("2D6", "1A2", "OAT1", "3A4", "2C9", "P-gp", "2C19","OATP1B1",
                "OATP1B3", "OAT3", "2B6", "MATE1", "MATE2-K", "2C8", "BCRP")) {
-  return(
-    drug_list %>%
-      filter(TYPE %in% type) %>%
-      filter(TARGET %in% target) %>%
-      mutate(DRUG = toupper(DRUG)) %>%
-      mutate(DRUG = str_remove_all(as.character(lapply(
-        str_split(DRUG, " AND "),
-        function(x) x[1])),
-        "[1-9,]"))
-  )
+  
+  # Input validation
+  if (is.null(drug_list)) {
+    stop("drug_list cannot be NULL")
+  }
+  
+  required_cols <- c("DRUG", "TYPE", "TARGET")
+  missing_cols <- setdiff(required_cols, names(drug_list))
+  if (length(missing_cols) > 0) {
+    stop("drug_list is missing required columns: ", 
+         paste(missing_cols, collapse = ", "))
+  }
+  
+  # Validate type and target parameters
+  valid_types <- c("inhibitor", "substrate", "inducer")
+  invalid_types <- setdiff(type, valid_types)
+  if (length(invalid_types) > 0) {
+    stop("Invalid type values: ", paste(invalid_types, collapse = ", "))
+  }
+  
+  valid_targets <- c("2D6", "1A2", "OAT1", "3A4", "2C9", "P-gp", "2C19", 
+                    "OATP1B1", "OATP1B3", "OAT3", "2B6", "MATE1", "MATE2-K", 
+                    "2C8", "BCRP")
+  invalid_targets <- setdiff(target, valid_targets)
+  if (length(invalid_targets) > 0) {
+    stop("Invalid target values: ", paste(invalid_targets, collapse = ", "))
+  }
+  
+  result <- drug_list %>%
+    filter(TYPE %in% type) %>%
+    filter(TARGET %in% target) %>%
+    mutate(DRUG = toupper(DRUG)) %>%
+    mutate(DRUG = str_remove_all(as.character(lapply(
+      str_split(DRUG, " AND "),
+      function(x) x[1])),
+      "[1-9,]"))
+  
+  if (nrow(result) == 0) {
+    warning("No drugs found matching the specified criteria")
+  }
+  
+  return(result)
 }
 
 

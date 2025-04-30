@@ -32,14 +32,4 @@ cytochrome P450 enzymes and transporter systems, as provided by the FDA.
 This dataset is used to identify potential drug-drug interactions (DDIs)
 in clinical studies.
 }
-\examples{
-# Find all strong inhibitors of CYP3A4
-fdi_clinical_ddi_drug_list \%>\%
-  filter(TYPE == "inhibitor" & TARGET == "3A4" & QUALIFIER == "strong")
-
-# Find all sensitive substrates
-fdi_clinical_ddi_drug_list \%>\%
-  filter(QUALIFIER == "sensitive")
-
-}
 \keyword{datasets}

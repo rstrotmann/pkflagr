@@ -21,15 +21,4 @@
 #' @source U.S. Food and Drug Administration (FDA) Drug Development and Drug Interactions:
 #' Table of Substrates, Inhibitors and Inducers
 #' \url{https://www.fda.gov/drugs/drug-interactions-labeling/drug-development-and-drug-interactions-table-substrates-inhibitors-and-inducers}
-#'
-#' @examples
-#' # Find all strong inhibitors of CYP3A4
-#' fdi_clinical_ddi_drug_list %>%
-#'   filter(TYPE == "inhibitor" & TARGET == "3A4" & QUALIFIER == "strong")
-#'
-#' # Find all sensitive substrates
-#' fdi_clinical_ddi_drug_list %>%
-#'   filter(QUALIFIER == "sensitive")
-#'
-#' @export
-"fdi_clinical_ddi_drug_list" 
+"fdi_clinical_ddi_drug_list"

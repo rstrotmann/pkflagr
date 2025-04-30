@@ -5,7 +5,7 @@
 \title{Make list of DDI perpetrators or substrates}
 \usage{
 make_ddi_drugs(
-  drug_list = fdi_clinical_ddi_drug_list,
+  drug_list = NULL,
   type = c("inhibitor", "substrate", "inducer"),
   target = c("2D6", "1A2", "OAT1", "3A4", "2C9", "P-gp", "2C19", "OATP1B1", "OATP1B3",
     "OAT3", "2B6", "MATE1", "MATE2-K", "2C8", "BCRP")

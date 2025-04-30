@@ -15,56 +15,59 @@
 #'     \item TARGET: The target of the DDI
 #'     \item QUALIFIER: The intensity qualifier (if present in input)
 #'   }
+#' @import dplyr
+#' @import tidyr
+#' @import stringr
 #' @export
 #'
 #' @examples
 #' make_ddi_drugs(type = "inhibitor", target = "2B6")
 make_ddi_drugs <- function(
-    drug_list = fdi_clinical_ddi_drug_list,
+    drug_list = NULL,
     type = c("inhibitor", "substrate", "inducer"),
     target = c("2D6", "1A2", "OAT1", "3A4", "2C9", "P-gp", "2C19","OATP1B1",
                "OATP1B3", "OAT3", "2B6", "MATE1", "MATE2-K", "2C8", "BCRP")) {
-  
+
   # Input validation
   if (is.null(drug_list)) {
-    stop("drug_list cannot be NULL")
+    drug_list = fdi_clinical_ddi_drug_list
   }
-  
+
   required_cols <- c("DRUG", "TYPE", "TARGET")
   missing_cols <- setdiff(required_cols, names(drug_list))
   if (length(missing_cols) > 0) {
-    stop("drug_list is missing required columns: ", 
+    stop("drug_list is missing required columns: ",
          paste(missing_cols, collapse = ", "))
   }
-  
+
   # Validate type and target parameters
   valid_types <- c("inhibitor", "substrate", "inducer")
   invalid_types <- setdiff(type, valid_types)
   if (length(invalid_types) > 0) {
     stop("Invalid type values: ", paste(invalid_types, collapse = ", "))
   }
-  
-  valid_targets <- c("2D6", "1A2", "OAT1", "3A4", "2C9", "P-gp", "2C19", 
-                    "OATP1B1", "OATP1B3", "OAT3", "2B6", "MATE1", "MATE2-K", 
+
+  valid_targets <- c("2D6", "1A2", "OAT1", "3A4", "2C9", "P-gp", "2C19",
+                    "OATP1B1", "OATP1B3", "OAT3", "2B6", "MATE1", "MATE2-K",
                     "2C8", "BCRP")
   invalid_targets <- setdiff(target, valid_targets)
   if (length(invalid_targets) > 0) {
     stop("Invalid target values: ", paste(invalid_targets, collapse = ", "))
   }
-  
+
   result <- drug_list %>%
-    filter(TYPE %in% type) %>%
-    filter(TARGET %in% target) %>%
-    mutate(DRUG = toupper(DRUG)) %>%
+    filter(.data$TYPE %in% type) %>%
+    filter(.data$TARGET %in% target) %>%
+    mutate(DRUG = toupper(.data$DRUG)) %>%
     mutate(DRUG = str_remove_all(as.character(lapply(
-      str_split(DRUG, " AND "),
+      str_split(.data$DRUG, " AND "),
       function(x) x[1])),
       "[1-9,]"))
-  
+
   if (nrow(result) == 0) {
     warning("No drugs found matching the specified criteria")
   }
-  
+
   return(result)
 }
 
@@ -104,7 +107,7 @@ cm_find <- function(
       temp, 1, function(x) {
         which(x[-1] == TRUE)}
       )) %>%
-    unnest(object_index) %>%
+    unnest(.data$object_index) %>%
     left_join(drug_list, by = "object_index")
 }
 

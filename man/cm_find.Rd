@@ -2,7 +2,7 @@
 % Please edit documentation in R/cm_find.R
 \name{cm_find}
 \alias{cm_find}
-\title{Title}
+\title{Identify concomitant medication with potential DDI effects}
 \usage{
 cm_find(cm, drug_list = NULL)
 }
@@ -19,7 +19,7 @@ the drug_list, with added columns DRUG (the canonical DDI drug name), TYPE
 and TARGET (the DDI target).
 }
 \description{
-Title
+Identify concomitant medication with potential DDI effects
 }
 \seealso{
 \code{\link[=make_ddi_drugs]{make_ddi_drugs()}}

@@ -72,7 +72,7 @@ make_ddi_drugs <- function(
 }
 
 
-#' Title
+#' Identify concomitant medication with potential DDI effects
 #'
 #' @param cm Concomitant medication table as data frame.
 #' @param drug_list A data frame with the drugs to be identified, with the columns
@@ -110,4 +110,25 @@ cm_find <- function(
     unnest(.data$object_index) %>%
     left_join(drug_list, by = "object_index")
 }
+
+
+#' Flag use of concomitant medication.
+#'
+#' @inheritParams cm_find
+#' @export
+cm_flag <- function(
+    cm,
+    drug_list = NULL) {
+  temp <- cm_find(cm, drug_list) %>%
+    distinct(.data$USUBJID, .data$CMSEQ, .data$DRUG, .data$TYPE,
+             .data$QUALIFIER, .data$TARGET)
+
+  out <- cm %>%
+    left_join(temp, by = c("USUBJID", "CMSEQ")) %>%
+    mutate(DDI_FLAG = !is.na(.data$DRUG))
+}
+
+
+
+
 

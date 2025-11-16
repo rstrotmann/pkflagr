@@ -1,0 +1,43 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# pkflagr
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+In clinical studies, concomitant administration of drugs that are precipitants
+of pharmacokinetic drug-drug interactions (DDI) may influence the
+pharmacokinetics (PK) of the study drug.
+This package provides function to identify and flag such concomitant
+medications.
+
+## Installation
+
+You can install the development version of pkflagr like so:
+
+``` r
+library(devtools)
+devtools::install_github("rstrotmann/pkflagr)
+```
+
+<!-- ## Example -->
+
+<!-- This is a basic example which shows you how to solve a common problem: -->
+
+<!-- ```{r example} -->
+<!-- library(pkflagr) -->
+<!-- ## basic example code -->
+<!-- ``` -->

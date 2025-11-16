@@ -2,5 +2,5 @@
 "_PACKAGE"
 
 utils::globalVariables(c(
-  "fdi_clinical_ddi_drug_list"
+  "fda_clinical_ddi_drug_list"
 ))

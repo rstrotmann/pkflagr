@@ -21,4 +21,4 @@
 #' @source U.S. Food and Drug Administration (FDA) Drug Development and Drug Interactions:
 #' Table of Substrates, Inhibitors and Inducers
 #' \url{https://www.fda.gov/drugs/drug-interactions-labeling/drug-development-and-drug-interactions-table-substrates-inhibitors-and-inducers}
-"fdi_clinical_ddi_drug_list"
+"fda_clinical_ddi_drug_list"

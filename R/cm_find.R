@@ -30,7 +30,7 @@ make_ddi_drugs <- function(
 
   # Input validation
   if (is.null(drug_list)) {
-    drug_list = fdi_clinical_ddi_drug_list
+    drug_list = fda_clinical_ddi_drug_list
   }
 
   required_cols <- c("DRUG", "TYPE", "TARGET")

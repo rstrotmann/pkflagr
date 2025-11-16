@@ -7,8 +7,7 @@ Description: What the package does (one paragraph).
 Imports:
     dplyr,
     tidyr,
-    stringr,
-    purrr
+    stringr
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -17,5 +16,6 @@ Depends:
     R (>= 3.5)
 LazyData: true
 Suggests: 
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    tibble
 Config/testthat/edition: 3

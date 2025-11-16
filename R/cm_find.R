@@ -74,41 +74,142 @@ make_ddi_drugs <- function(
 
 #' Identify concomitant medication with potential DDI effects
 #'
-#' @param cm Concomitant medication table as data frame.
+#' This function identifies concomitant medications that match drugs in a
+#' drug-drug interaction (DDI) list. String matching is performed
+#' case-insensitively, so "aspirin" will match "ASPIRIN". The function returns
+#' all matching rows with DDI information added.
+#'
+#' @param cm Concomitant medication table as data frame. Must contain a column
+#'   named `CMDECOD` with medication names. May contain other columns (e.g.,
+#'   `USUBJID`, `CMSEQ`) which will be preserved in the output.
 #' @param drug_list A data frame with the drugs to be identified, with the columns
-#'   DRUG, TYPE, QUALIFIER and TARGET.
+#'   DRUG, TYPE, QUALIFIER and TARGET. If NULL, uses the default FDA drug list
+#'   via `make_ddi_drugs()`.
 #' @returns The concomitant medication table, filtered by the drugs that are in
 #'   the drug_list, with added columns DRUG (the canonical DDI drug name), TYPE
 #'   (the nature of the DDI object), QUALIFIER (the DDI intensity qualifier),
-#'   and TARGET (the DDI target).
-#' @import purrr
+#'   and TARGET (the DDI target). Returns an empty data frame with the correct
+#'   column structure if no matches are found. String matching is
+#'   case-insensitive.
+#'
+#' @import dplyr
+#' @import tidyr
 #' @import stringr
-#' @seealso [make_ddi_drugs()]
+#' @seealso [make_ddi_drugs()] for creating custom drug lists
+#'
+#' @examples
+#' # Example 1: Basic usage with custom drug list
+#' cm <- data.frame(
+#'   USUBJID = c("001", "002"),
+#'   CMSEQ = c(1, 1),
+#'   CMDECOD = c("ASPIRIN", "WARFARIN")
+#' )
+#' drug_list <- data.frame(
+#'   DRUG = c("ASPIRIN", "WARFARIN"),
+#'   TYPE = c("inhibitor", "substrate"),
+#'   TARGET = c("2C9", "2C9"),
+#'   QUALIFIER = c("weak", "sensitive")
+#' )
+#' cm_find(cm, drug_list)
+#'
+#' # Example 2: Case-insensitive matching
+#' cm <- data.frame(
+#'   USUBJID = "001",
+#'   CMSEQ = 1,
+#'   CMDECOD = "aspirin"  # lowercase
+#' )
+#' drug_list <- data.frame(
+#'   DRUG = "ASPIRIN",  # uppercase
+#'   TYPE = "inhibitor",
+#'   TARGET = "2C9",
+#'   QUALIFIER = "weak"
+#' )
+#' cm_find(cm, drug_list)  # Will match despite case difference
+#'
+#' # Example 3: Multiple matches for a single medication
+#' cm <- data.frame(
+#'   USUBJID = "001",
+#'   CMSEQ = 1,
+#'   CMDECOD = "KETOCONAZOLE"
+#' )
+#' drug_list <- data.frame(
+#'   DRUG = c("KETOCONAZOLE", "KETOCONAZOLE"),
+#'   TYPE = c("inhibitor", "inhibitor"),
+#'   TARGET = c("3A4", "2C9"),
+#'   QUALIFIER = c("strong", "moderate")
+#' )
+#' cm_find(cm, drug_list)  # Returns 2 rows (one for each target)
+#'
+#' # Example 4: No matches found (returns empty data frame)
+#' cm <- data.frame(
+#'   USUBJID = "001",
+#'   CMSEQ = 1,
+#'   CMDECOD = "XYLOPHONE"  # Not in drug list
+#' )
+#' drug_list <- data.frame(
+#'   DRUG = "ASPIRIN",
+#'   TYPE = "inhibitor",
+#'   TARGET = "2C9",
+#'   QUALIFIER = "weak"
+#' )
+#' result <- cm_find(cm, drug_list)  # Returns empty data frame, no error
+#' nrow(result)  # 0
+#'
+#' # Example 5: Using default FDA drug list
+#' cm <- data.frame(
+#'   USUBJID = "001",
+#'   CMSEQ = 1,
+#'   CMDECOD = "ASPIRIN"
+#' )
+#' cm_find(cm)  # Uses make_ddi_drugs() default
+#'
 #' @export
 cm_find <- function(
   cm,
   drug_list = NULL
   ) {
+  # Input validation for cm
+  if (!is.data.frame(cm)) {
+    stop("cm must be a data frame")
+  }
+  
+  if (!"CMDECOD" %in% names(cm)) {
+    stop("cm must contain a column named 'CMDECOD'")
+  }
+  
+  # Handle empty cm table - crossing() will naturally return empty result
+  # but we validate structure first
+  
+  # Input validation and default for drug_list
   if(is.null(drug_list)) {
     drug_list <- make_ddi_drugs()
   }
+  
+  # Validate drug_list structure
+  if (!is.data.frame(drug_list)) {
+    stop("drug_list must be a data frame")
+  }
+  
+  required_drug_cols <- c("DRUG", "TYPE", "TARGET")
+  missing_cols <- setdiff(required_drug_cols, names(drug_list))
+  if (length(missing_cols) > 0) {
+    stop("drug_list is missing required columns: ",
+         paste(missing_cols, collapse = ", "))
+  }
+  
+  # Handle empty drug_list - crossing() will naturally return empty result
+  # No need for special handling, but we validate structure first
 
   drug_list <- drug_list %>%
     mutate(object_index = row_number())
 
-  temp <- data.frame(
-    name = cm$CMDECOD,
-    m = purrr::map(drug_list$DRUG, function(x) {str_detect(cm$CMDECOD, x)})
-  )
-  colnames(temp) <- NULL
-
+  # Create cross join of all cm rows with all drug_list rows
+  # Then filter to only matches where drug name is found in medication name
+  # Matching is case-insensitive (both converted to uppercase for comparison)
+  # crossing() already includes all columns from both cm and drug_list
   cm %>%
-    mutate(object_index = apply(
-      temp, 1, function(x) {
-        which(x[-1] == TRUE)}
-      )) %>%
-    unnest(.data$object_index) %>%
-    left_join(drug_list, by = "object_index")
+    crossing(drug_list) %>%
+    filter(str_detect(toupper(.data$CMDECOD), toupper(.data$DRUG)))
 }
 
 

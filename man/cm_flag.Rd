@@ -7,10 +7,13 @@
 cm_flag(cm, drug_list = NULL)
 }
 \arguments{
-\item{cm}{Concomitant medication table as data frame.}
+\item{cm}{Concomitant medication table as data frame. Must contain a column
+named \code{CMDECOD} with medication names. May contain other columns (e.g.,
+\code{USUBJID}, \code{CMSEQ}) which will be preserved in the output.}
 
 \item{drug_list}{A data frame with the drugs to be identified, with the columns
-DRUG, TYPE, QUALIFIER and TARGET.}
+DRUG, TYPE, QUALIFIER and TARGET. If NULL, uses the default FDA drug list
+via \code{make_ddi_drugs()}.}
 }
 \description{
 Flag use of concomitant medication.

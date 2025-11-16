@@ -7,20 +7,95 @@
 cm_find(cm, drug_list = NULL)
 }
 \arguments{
-\item{cm}{Concomitant medication table as data frame.}
+\item{cm}{Concomitant medication table as data frame. Must contain a column
+named \code{CMDECOD} with medication names. May contain other columns (e.g.,
+\code{USUBJID}, \code{CMSEQ}) which will be preserved in the output.}
 
 \item{drug_list}{A data frame with the drugs to be identified, with the columns
-DRUG, TYPE, QUALIFIER and TARGET.}
+DRUG, TYPE, QUALIFIER and TARGET. If NULL, uses the default FDA drug list
+via \code{make_ddi_drugs()}.}
 }
 \value{
 The concomitant medication table, filtered by the drugs that are in
 the drug_list, with added columns DRUG (the canonical DDI drug name), TYPE
 (the nature of the DDI object), QUALIFIER (the DDI intensity qualifier),
-and TARGET (the DDI target).
+and TARGET (the DDI target). Returns an empty data frame with the correct
+column structure if no matches are found. String matching is
+case-insensitive.
 }
 \description{
-Identify concomitant medication with potential DDI effects
+This function identifies concomitant medications that match drugs in a
+drug-drug interaction (DDI) list. String matching is performed
+case-insensitively, so "aspirin" will match "ASPIRIN". The function returns
+all matching rows with DDI information added.
+}
+\examples{
+# Example 1: Basic usage with custom drug list
+cm <- data.frame(
+  USUBJID = c("001", "002"),
+  CMSEQ = c(1, 1),
+  CMDECOD = c("ASPIRIN", "WARFARIN")
+)
+drug_list <- data.frame(
+  DRUG = c("ASPIRIN", "WARFARIN"),
+  TYPE = c("inhibitor", "substrate"),
+  TARGET = c("2C9", "2C9"),
+  QUALIFIER = c("weak", "sensitive")
+)
+cm_find(cm, drug_list)
+
+# Example 2: Case-insensitive matching
+cm <- data.frame(
+  USUBJID = "001",
+  CMSEQ = 1,
+  CMDECOD = "aspirin"  # lowercase
+)
+drug_list <- data.frame(
+  DRUG = "ASPIRIN",  # uppercase
+  TYPE = "inhibitor",
+  TARGET = "2C9",
+  QUALIFIER = "weak"
+)
+cm_find(cm, drug_list)  # Will match despite case difference
+
+# Example 3: Multiple matches for a single medication
+cm <- data.frame(
+  USUBJID = "001",
+  CMSEQ = 1,
+  CMDECOD = "KETOCONAZOLE"
+)
+drug_list <- data.frame(
+  DRUG = c("KETOCONAZOLE", "KETOCONAZOLE"),
+  TYPE = c("inhibitor", "inhibitor"),
+  TARGET = c("3A4", "2C9"),
+  QUALIFIER = c("strong", "moderate")
+)
+cm_find(cm, drug_list)  # Returns 2 rows (one for each target)
+
+# Example 4: No matches found (returns empty data frame)
+cm <- data.frame(
+  USUBJID = "001",
+  CMSEQ = 1,
+  CMDECOD = "XYLOPHONE"  # Not in drug list
+)
+drug_list <- data.frame(
+  DRUG = "ASPIRIN",
+  TYPE = "inhibitor",
+  TARGET = "2C9",
+  QUALIFIER = "weak"
+)
+result <- cm_find(cm, drug_list)  # Returns empty data frame, no error
+nrow(result)  # 0
+
+# Example 5: Using default FDA drug list
+cm <- data.frame(
+  USUBJID = "001",
+  CMSEQ = 1,
+  CMDECOD = "ASPIRIN"
+)
+cm_find(cm)  # Uses make_ddi_drugs() default
+
 }
 \seealso{
-\code{\link[=make_ddi_drugs]{make_ddi_drugs()}}
+\code{\link[=make_ddi_drugs]{make_ddi_drugs()}} for creating custom drug lists
 }
